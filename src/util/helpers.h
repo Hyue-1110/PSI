@@ -7,6 +7,8 @@
 
 #ifndef HELPERS_H_
 #define HELPERS_H_
+static bool IfTestTime=1;
+static bool IfTestCom=1;
 
 #include "socket.h"
 #include "typedefs.h"

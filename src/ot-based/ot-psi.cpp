@@ -11,12 +11,14 @@
 uint32_t otpsi(role_type role, uint32_t neles, uint32_t pneles, uint32_t* elebytelens, uint8_t** elements,
 		uint8_t*** result, uint32_t** res_bytelen, crypto* crypt_env, CSocket* sock,  uint32_t ntasks, double epsilon,
 		bool detailed_timings) {
-
+	//cout<<IfTestTime<<endl;
 	prf_state_ctx prf_state;
 	uint32_t maskbytelen, nbins, intersect_size, internal_bitlen, maskbitlen, *res_pos, i, elebytelen;
 	uint8_t *eleptr;
 	timeval t_start, t_end;
-
+	if(IfTestTime){
+		gettimeofday(&t_start, NULL);
+	}
 
 	DETAILED_TIMINGS = (detailed_timings>0);
 
@@ -53,7 +55,10 @@ uint32_t otpsi(role_type role, uint32_t neles, uint32_t pneles, uint32_t* elebyt
 	}
 
 	free(eleptr);
-
+	if(IfTestTime){
+		gettimeofday(&t_end, NULL);
+		cout << "Time for OT test(60): " << getMillies(t_start, t_end) << " ms" << endl;
+	}
 	return intersect_size;
 }
 
@@ -62,12 +67,14 @@ uint32_t otpsi(role_type role, uint32_t neles, uint32_t pneles, uint32_t* elebyt
 uint32_t otpsi(role_type role, uint32_t neles, uint32_t pneles, uint32_t elebytelen, uint8_t* elements,
 		uint8_t** result, crypto* crypt_env, CSocket* sock,  uint32_t ntasks, double epsilon,
 		bool detailed_timings) {
-
+	
 	prf_state_ctx prf_state;
 	uint32_t maskbytelen, nbins, intersect_size, internal_bitlen, maskbitlen, *res_pos, i, elebitlen;
 	uint8_t *eleptr;
 	timeval t_start, t_end;
-
+	if(IfTestTime){
+		gettimeofday(&t_start, NULL);
+	}
 	DETAILED_TIMINGS = detailed_timings;
 
 	maskbitlen = pad_to_multiple(crypt_env->get_seclvl().statbits + ceil_log2(neles) + ceil_log2(pneles), 8);
@@ -135,7 +142,10 @@ uint32_t otpsi(role_type role, uint32_t neles, uint32_t pneles, uint32_t elebyte
 
 	if(elebitlen > maskbitlen)
 		free(eleptr);
-
+	if(IfTestTime){
+		gettimeofday(&t_end, NULL);
+		cout << "Time for OT test(147): " << getMillies(t_start, t_end) << " ms" << endl;
+	}
 	return intersect_size;
 }
 
@@ -394,12 +404,18 @@ void otpsi_server(uint8_t* elements, uint32_t neles, uint32_t nbins, uint32_t pn
 #endif
 	//send the masks to the receiver
 	send_masks(masks, neles * NUM_HASH_FUNCTIONS, maskbytelen, sock[0]);
+	if(IfTestCom){
+		cout<<"OT test send(398):"<<neles * NUM_HASH_FUNCTIONS*maskbytelen<<endl;
+	}
 
 
 #ifdef ENABLE_STASH
 	//send masks for all items on the stash
 	for(uint32_t i = 0; i < stashsize; i++) {
 		send_masks(masks, neles, maskbytelen, sock[0]);
+		if(IfTestCom){
+		cout<<"OT test send(407):"<<neles*maskbytelen<<endl;
+	}
 	}
 #endif
 
@@ -493,6 +509,9 @@ void oprg_server(uint8_t* hash_table, uint32_t nbins, uint32_t totaleles, uint32
 	res_vec.AttachBuf(res_buf, totaleles * maskbytelen);
 
 	sender->send(nbins, maskbitlen, &ht_vec, &res_vec, nthreads, nelesinbin);
+	if(IfTestCom){
+		cout<<"OT test send(497):"<<nbins*maskbitlen<<endl;
+	}
 	
 	if(DETAILED_TIMINGS) {
 		gettimeofday(&t_end, NULL);

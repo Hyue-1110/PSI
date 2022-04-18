@@ -15,7 +15,7 @@ int32_t main(int32_t argc, char** argv) {
 	vector<CSocket> sockfd(ntasks);
 	uint16_t port=7766;
 	uint8_t* seed = (uint8_t*) malloc(AES_BYTES);
-
+	bool IfEqualEleNum=false;
 
 	read_psi_test_options(&argc, &argv, &role, &nruns);
 
@@ -33,11 +33,18 @@ int32_t main(int32_t argc, char** argv) {
 			connect(address.c_str(), port, sockfd[i]);
 	}
 
-	for(uint32_t i = 0; i < nruns; i++) {
+	for(uint32_t i = 0; i < 1; i++) {
+		// before change: uint32_t i = 0; i < nruns; i++
 		if(role == CLIENT) cout << "Running test on iteration " << i << std::flush;
-		nelements = rand() % (1<<12);
-		elebytelen = (rand() % 12) + 4;
-
+		if(IfEqualEleNum){
+			//before change: rand() % (1<<12),nelements is number of set
+			nelements = 256;//rand() % (1048576);//2^12=4096,2^16=65536,2^20=1048576,2^24=16777216, 2^28=268435456
+			//before change: (rand() % 12) + 4,nelements is length of elements(byte)
+			elebytelen = 9;
+		}else{
+			nelements = rand()%61440+4096;
+			elebytelen = 9;
+		}
 		test_psi_prot(role, sockfd.data(), nelements, elebytelen, crypt);
 		if(role == CLIENT) cout << endl;
 	}
@@ -57,8 +64,7 @@ uint32_t test_psi_prot(role_type role, CSocket* sock, uint32_t nelements,
 
 	pnelements = set_up_parameters(role, nelements, &elebytelen, &elements, &pelements, sock[0], crypt);
 
-	if(role == CLIENT) cout << " for |A|=" << nelements << ", |B|=" << pnelements << ", b=" << elebytelen << ": " << std::flush;
-
+	if(role == CLIENT) cout << " for |A|=" << nelements << ", |B|=" << pnelements << ", b=" << elebytelen << ": " << std::flush<<endl<<endl;
 
 	p_inter_size = plaintext_intersect(nelements, pnelements, elebytelen, elements, pelements,
 			&p_intersection);
@@ -70,59 +76,62 @@ uint32_t test_psi_prot(role_type role, CSocket* sock, uint32_t nelements,
 	//cout << "Naive intersection computed " << endl;
 	if(role == CLIENT) cout << "." << std::flush;
 
+	//cout<<endl;
 	dh_inter_size = dhpsi(role, nelements, pnelements, elebytelen, elements, &dh_intersection, crypt,
 			sock, ntasks);
 	//cout << "DH intersection computed " << endl;
 	if(role == CLIENT) cout << "." << std::flush;
-
+	
+	// now test ot only
+	//cout<<endl;
 	ot_inter_size = otpsi(role, nelements, pnelements, elebytelen, elements, &ot_intersection,
 			crypt, sock, ntasks, epsilon);
 	//cout << "OT intersection computed " << endl;
 	if(role == CLIENT) cout << "." << std::flush;
 
 
-	if(role == CLIENT) {
-		bool success = true;
-		success &= (p_inter_size == n_inter_size);
-		success &= (p_inter_size == dh_inter_size);
-		success &= (p_inter_size == ot_inter_size);
+	// if(role == CLIENT) {
+	// 	bool success = true;
+	// 	success &= (p_inter_size == n_inter_size);
+	// 	success &= (p_inter_size == dh_inter_size);
+	// 	success &= (p_inter_size == ot_inter_size);
 
-		for(uint32_t i = 0; i < p_inter_size * elebytelen; i++) {
-			success &= (p_intersection[i] == n_intersection[i]);
-			success &= (p_intersection[i] == dh_intersection[i]);
-			success &= (p_intersection[i] == ot_intersection[i]);
-		}
+	// 	for(uint32_t i = 0; i < p_inter_size * elebytelen; i++) {
+	// 		success &= (p_intersection[i] == n_intersection[i]);
+	// 		success &= (p_intersection[i] == dh_intersection[i]);
+	// 		success &= (p_intersection[i] == ot_intersection[i]);
+	// 	}
 
-		if(!success) {
-			cout << "Error in tests for " << nelements << " and " << pnelements << " on " << elebytelen
-					<< " byte length: " << endl;
+	// 	if(!success) {
+	// 		cout << "Error in tests for " << nelements << " and " << pnelements << " on " << elebytelen
+	// 				<< " byte length: " << endl;
 
-			cout << "\t" << p_inter_size << " elements in verification intersection" << endl;
-			cout << "\t" << n_inter_size << " elements in naive intersection" << endl;
-			cout << "\t" << dh_inter_size << " elements in DH intersection" << endl;
-			cout << "\t" << ot_inter_size << " elements in OT intersection" << endl;
+	// 		cout << "\t" << p_inter_size << " elements in verification intersection" << endl;
+	// 		cout << "\t" << n_inter_size << " elements in naive intersection" << endl;
+	// 		cout << "\t" << dh_inter_size << " elements in DH intersection" << endl;
+	// 		cout << "\t" << ot_inter_size << " elements in OT intersection" << endl;
 
-			cout << "Plaintext intersection (" << p_inter_size << "): " << endl;
-			//plot_set(p_intersection, p_inter_size, elebytelen);
-			cout << "Naive intersection (" << n_inter_size << "): " << endl;
-			//plot_set(n_intersection, n_inter_size, elebytelen);
-			cout << "DH intersection (" << dh_inter_size << "): "  << endl;
-			//plot_set(dh_intersection, dh_inter_size, elebytelen);
-			cout << "OT intersection: (" << ot_inter_size << "): " << endl;
-			//plot_set(ot_intersection, ot_inter_size, elebytelen);
-		}
+	// 		cout << "Plaintext intersection (" << p_inter_size << "): " << endl;
+	// 		//plot_set(p_intersection, p_inter_size, elebytelen);
+	// 		cout << "Naive intersection (" << n_inter_size << "): " << endl;
+	// 		//plot_set(n_intersection, n_inter_size, elebytelen);
+	// 		cout << "DH intersection (" << dh_inter_size << "): "  << endl;
+	// 		//plot_set(dh_intersection, dh_inter_size, elebytelen);
+	// 		cout << "OT intersection: (" << ot_inter_size << "): " << endl;
+	// 		//plot_set(ot_intersection, ot_inter_size, elebytelen);
+	// 	}
 
-		if(p_inter_size > 0)
-			free(p_intersection);
-		if(n_inter_size > 0)
-			free(n_intersection);
-		if(dh_inter_size > 0)
-			free(dh_intersection);
-		if(ot_inter_size > 0)
-			free(ot_intersection);
+	// 	if(p_inter_size > 0)
+	// 		free(p_intersection);
+	// 	if(n_inter_size > 0)
+	// 		free(n_intersection);
+	// 	if(dh_inter_size > 0)
+	// 		free(dh_intersection);
+	// 	if(ot_inter_size > 0)
+	// 		free(ot_intersection);
 
-		assert(success);
-	}
+	// 	assert(success);
+	// }
 
 	free(elements);
 	free(pelements);
@@ -192,11 +201,12 @@ uint32_t set_up_parameters(role_type role, uint32_t myneles, uint32_t* mybytelen
 	uint8_t** elements, uint8_t** pelements, CSocket& sock, crypto* crypt) {
 
 	uint32_t pneles, nintersections, offset;
-
+	
 	//Exchange meta-information and equalize byte-length
 	sock.Send(&myneles, sizeof(uint32_t));
 	sock.Receive(&pneles, sizeof(uint32_t));
-
+	cout<<"209:"<<pneles<<endl;
+	
 	if(role == SERVER) {
 		sock.Send(mybytelen, sizeof(uint32_t));
 	} else {
@@ -206,7 +216,7 @@ uint32_t set_up_parameters(role_type role, uint32_t myneles, uint32_t* mybytelen
 	*pelements = (uint8_t*) malloc(pneles * *mybytelen);
 
 	crypt->gen_rnd(*elements, myneles * *mybytelen);
-
+	
 	//Exchange elements for later check
 	if(role == SERVER) {
 		sock.Send(*elements, myneles * *mybytelen);
@@ -221,7 +231,10 @@ uint32_t set_up_parameters(role_type role, uint32_t myneles, uint32_t* mybytelen
 		}
 		sock.Send(*elements, myneles * *mybytelen);
 	}
-
+	if(IfTestCom){
+		cout<<"set up parameters: "<<myneles * *mybytelen<<endl;
+		cout<<"set up parameters(once): "<<sizeof(uint32_t)*3<<endl;
+	}
 	return pneles;
 }
 

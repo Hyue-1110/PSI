@@ -13,6 +13,10 @@ uint32_t naivepsi(role_type role, uint32_t neles, uint32_t pneles, uint32_t* ele
 	ectx.eles.input2d = elements;
 	ectx.eles.varbytelens = elebytelens;
 	ectx.eles.hasvarbytelen = true;
+	timeval t_start, t_end;
+	if(IfTestTime){
+		gettimeofday(&t_start, NULL);
+	}
 	uint32_t* matches = (uint32_t*) malloc(sizeof(uint32_t) * min(neles, pneles));
 
 	uint32_t intersect_size = naivepsi(role, neles, pneles, ectx, crypt_env, sock, ntasks, matches);
@@ -20,7 +24,10 @@ uint32_t naivepsi(role_type role, uint32_t neles, uint32_t pneles, uint32_t* ele
 	create_result_from_matches_var_bitlen(result, resbytelens, elebytelens, elements, matches, intersect_size);
 
 	free(matches);
-
+	if(IfTestTime){
+		gettimeofday(&t_end, NULL);
+		cout << "Time for NAIVE test(29): " << getMillies(t_start, t_end) << " ms" << endl;
+	}
 	return intersect_size;
 }
 
@@ -31,6 +38,10 @@ uint32_t naivepsi(role_type role, uint32_t neles, uint32_t pneles, uint32_t eleb
 	ectx.eles.input1d = elements;
 	ectx.eles.fixedbytelen = elebytelen;
 	ectx.eles.hasvarbytelen = false;
+	timeval t_start, t_end;
+	if(IfTestTime){
+		gettimeofday(&t_start, NULL);
+	}
 
 	uint32_t* matches = (uint32_t*) malloc(sizeof(uint32_t) * min(neles, pneles));
 
@@ -39,7 +50,10 @@ uint32_t naivepsi(role_type role, uint32_t neles, uint32_t pneles, uint32_t eleb
 	create_result_from_matches_fixed_bitlen(result, elebytelen, elements, matches, intersect_size);
 
 	free(matches);
-
+	if(IfTestTime){
+		gettimeofday(&t_end, NULL);
+		cout << "Time for NAIVE test(55): " << getMillies(t_start, t_end) << " ms" << endl;
+	}
 	return intersect_size;
 }
 
@@ -84,7 +98,9 @@ uint32_t naivepsi(role_type role, uint32_t neles, uint32_t pneles, task_ctx ectx
 	cout << "Exchanging hashes" << endl;
 #endif
 	snd_and_rcv(hashes, neles * maskbytelen, phashes, pneles * maskbytelen, tmpsock);
-
+	if(IfTestCom){
+		cout<<"NAVIE test send(398):"<<neles * maskbytelen<<endl;
+	}
 	/*cout << "Hashes of my elements: " << endl;
 	for(i = 0; i < neles; i++) {
 		for(uint32_t j = 0; j < maskbytelen; j++) {

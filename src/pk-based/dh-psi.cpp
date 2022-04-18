@@ -10,6 +10,10 @@ uint32_t dhpsi(role_type role, uint32_t neles, uint32_t pneles, uint32_t* elebyt
 		uint8_t*** result, uint32_t** resbytelens, crypto* crypt_env, CSocket* sock, uint32_t ntasks,
 		bool cardinality, field_type ftype) {
 	task_ctx ectx;
+	timeval t_start, t_end;
+	if(IfTestTime){
+		gettimeofday(&t_start, NULL);
+	}
 	ectx.eles.input2d = elements;
 	ectx.eles.varbytelens = elebytelens;
 	ectx.eles.hasvarbytelen = true;
@@ -20,7 +24,10 @@ uint32_t dhpsi(role_type role, uint32_t neles, uint32_t pneles, uint32_t* elebyt
 	create_result_from_matches_var_bitlen(result, resbytelens, elebytelens, elements, matches, intersect_size);
 
 	free(matches);
-
+	if(IfTestTime){
+		gettimeofday(&t_end, NULL);
+		cout << "Time for DH test(29): " << getMillies(t_start, t_end) << " ms" << endl;
+	}
 	return intersect_size;
 }
 
@@ -28,6 +35,10 @@ uint32_t dhpsi(role_type role, uint32_t neles, uint32_t pneles, uint32_t* elebyt
 uint32_t dhpsi(role_type role, uint32_t neles, uint32_t pneles, uint32_t elebytelen, uint8_t* elements,
 		uint8_t** result, crypto* crypt_env, CSocket* sock, uint32_t ntasks, bool cardinality, field_type ftype) {
 	task_ctx ectx;
+	timeval t_start, t_end;
+	if(IfTestTime){
+		gettimeofday(&t_start, NULL);
+	}
 	ectx.eles.input1d = elements;
 	ectx.eles.fixedbytelen = elebytelen;
 	ectx.eles.hasvarbytelen = false;
@@ -38,7 +49,10 @@ uint32_t dhpsi(role_type role, uint32_t neles, uint32_t pneles, uint32_t elebyte
 	create_result_from_matches_fixed_bitlen(result, elebytelen, elements, matches, intersect_size);
 
 	free(matches);
-
+	if(IfTestTime){
+		gettimeofday(&t_end, NULL);
+		cout << "Time for DH test(54): " << getMillies(t_start, t_end) << " ms" << endl;
+	}
 	return intersect_size;
 }
 
@@ -101,7 +115,9 @@ uint32_t dhpsi(role_type role, uint32_t neles, uint32_t pneles, task_ctx ectx, c
 	cout << "Exchanging ciphertexts" << endl;
 #endif
 	snd_and_rcv(encrypted_eles, neles * fe_bytes, peles, pneles * fe_bytes, tmpsock);
-
+	if(IfTestCom){
+		cout<<"DH test send(119):"<<neles * fe_bytes<<endl;
+	}
 
 	/* Import and Encrypt elements again */
 	ectx.eles.input1d = peles;
@@ -156,7 +172,9 @@ uint32_t dhpsi(role_type role, uint32_t neles, uint32_t pneles, task_ctx ectx, c
 	}
 
 	snd_and_rcv(phashes, sndbufsize, hashes, rcvbufsize, tmpsock);
-
+	if(IfTestCom){
+		cout<<"DH test send(174):"<<sndbufsize<<endl;
+	}
 #ifdef DEBUG
 	cout << "Finding intersection" << endl;
 #endif
