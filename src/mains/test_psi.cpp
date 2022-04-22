@@ -9,14 +9,14 @@
 
 int32_t main(int32_t argc, char** argv) {
 	//string address="127.0.0.1";本地10.77.77.1
-	string server_addr="10.249.33.73", client_addr="10.249.33.73";
+	string server_addr="192.168.43.63";//修改此处进行联机测试
 	uint32_t nelements, elebytelen, ntasks=1, nruns=1, symsecbits=128;
 	uint64_t rnd;
 	role_type role = (role_type) 0;
 	vector<CSocket> sockfd(ntasks);
 	uint16_t port=7766;
 	uint8_t* seed = (uint8_t*) malloc(AES_BYTES);
-	bool IfEqualEleNum=false;
+	bool IfEqualEleNum=true;
 
 	read_psi_test_options(&argc, &argv, &role, &nruns);
 
@@ -29,8 +29,8 @@ int32_t main(int32_t argc, char** argv) {
 
 	if(role == SERVER) {
 		cout<<"you are the server"<<endl;
-		//cin>>"please input the client's ip address: ">>client_addr;
-		listen(client_addr.c_str(), port, sockfd.data(), ntasks);
+		//cin>>"please input the yours ip address: ">>client_addr;
+		listen(server_addr.c_str(), port, sockfd.data(), ntasks);
 		//listen(address.c_str(), port, sockfd.data(), ntasks); //原
 		
 	} else {

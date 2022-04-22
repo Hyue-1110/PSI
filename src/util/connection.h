@@ -7,6 +7,7 @@
 
 #ifndef CONNECTION_H__
 #define CONNECTION_H__
+#define DEBUG
 
 #include "typedefs.h"
 #include "socket.h"
