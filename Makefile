@@ -77,8 +77,9 @@ demo:
 
 test: core
 	${CC} -o test.exe ${SRC}/mains/test_psi.cpp ${OBJECTS_DHPSI} ${OBJECTS_OTPSI} ${OBJECTS_NAIVE} ${OBJECTS_SERVERAIDED} ${OBJECTS_UTIL} ${OBJECTS_HASHING} ${OBJECTS_CRYPTO} ${OBJECTS_OT} ${OBJECTS_MIRACL} ${CFLAGS} ${DEBUG_OPTIONS} ${LIBRARIES} ${MIRACL_LIB} ${INCLUDE} ${COMPILER_OPTIONS} 
-	./test.exe -r 0 -t 10 & 
-	./test.exe -r 1 -t 10
+	./test.exe -r 0 -t 10 
+#	& 
+#	 ./test.exe -r 1 -t 10
 
 
 cuckoo:  

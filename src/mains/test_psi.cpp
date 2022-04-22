@@ -8,7 +8,8 @@
 #include "test_psi.h"
 
 int32_t main(int32_t argc, char** argv) {
-	string address="127.0.0.1";
+	//string address="127.0.0.1";本地10.77.77.1
+	string server_addr="10.249.33.73", client_addr="10.249.33.73";
 	uint32_t nelements, elebytelen, ntasks=1, nruns=1, symsecbits=128;
 	uint64_t rnd;
 	role_type role = (role_type) 0;
@@ -27,10 +28,17 @@ int32_t main(int32_t argc, char** argv) {
 	srand((unsigned)rnd+time(0));
 
 	if(role == SERVER) {
-		listen(address.c_str(), port, sockfd.data(), ntasks);
+		cout<<"you are the server"<<endl;
+		//cin>>"please input the client's ip address: ">>client_addr;
+		listen(client_addr.c_str(), port, sockfd.data(), ntasks);
+		//listen(address.c_str(), port, sockfd.data(), ntasks); //原
+		
 	} else {
+		cout<<"you are the client"<<endl;
 		for(uint32_t i = 0; i < ntasks; i++)
-			connect(address.c_str(), port, sockfd[i]);
+			//cin>>"please input the server's ip address: ">>server_addr;
+			connect(server_addr.c_str(), port, sockfd[i]);
+			//connect(address.c_str(), port, sockfd[i]); 原
 	}
 
 	for(uint32_t i = 0; i < 1; i++) {
@@ -42,7 +50,7 @@ int32_t main(int32_t argc, char** argv) {
 			//before change: (rand() % 12) + 4,nelements is length of elements(byte)
 			elebytelen = 9;
 		}else{
-			nelements = rand()%61440+4096;
+			nelements = rand()%256;
 			elebytelen = 9;
 		}
 		test_psi_prot(role, sockfd.data(), nelements, elebytelen, crypt);
